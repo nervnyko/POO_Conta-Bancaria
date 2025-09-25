@@ -20,8 +20,7 @@ class ContaBancaria:
 
     def pegar_saldo(self):
         return self._saldo
-
-#Definindo a classe de conta corrente
+#Definindo a classe de Conta Corrente
 class ContaCorrente (ContaBancaria):
     def __init__ (self, titular, saldo_inicial=0.0, limite=0.0):
         super().__init__(titular, saldo_inicial)
@@ -39,97 +38,91 @@ class ContaPoupanca (ContaBancaria):
     def __init__ (self, titular, saldo_inicial= 0.0, tax_rend = 0.0005 ):
         super ().__init__ (titular, saldo_inicial)
         self.taxa = float (tax_rend)
-
-#Code para render o dinheiro
+    #rendimentor
     def rendimento (self):
         if self._saldo > 0:
             self._saldo += self._saldo * self.taxa
 
-conta1 = ContaCorrente ("Mateus Enter", 200, 400)
-conta2 = ContaPoupanca ("Mateus Enter", 1000)
-
-
-print ("Olá, seja bem-vinde a sua conta da WydenBank, como deseja continuar?")
-print ("Digite o número da ação que deseja realizar e em seguida aperte Enter")
-print ("1 - Conta Corrente \n2- Conta Poupança")
-conta_type = int (input ())
-
-#loop para conta corrente.
-while conta_type == 1:
-    print ("\nO que deseja fazer?")
-    print ("\n1 - Exibir saldo \n2 - Depositar \n3 - Sacar \n4 - Mudar conta \n5 - Sair")
-    action = int (input ())
+class Banco:
+    def __init__(self):
+        self._contas = []
     
-    #match de ação de acordo com o input
-    match action:
-        case 1: 
-            conta1.ver_saldo()
+    def abrir_conta_user(self):
+        titular = input("Digite o nome do titular: ")
+        conta_type_input = input("Escolha o tipo de conta (1- Corrente, 2- Poupança): ")
+        saldo_inicial = float(input("Digite o saldo inicial: "))
 
-        case 2: 
-            try:
-                valor = float(input ("\nDigite o valor que deseja depositar: "))
-                conta1.depositar(valor)
-                conta = conta1
-                print(f"Depósito realizado com sucesso! Seu saldo final é de: R$ {conta.pegar_saldo():.2f}")
+        if conta_type_input == "1":
+            limite_cc = float(input("Digite o limite da conta corrente: "))
+            nova_conta = ContaCorrente(titular, saldo_inicial, limite_cc)
+            self._contas.append(nova_conta)
+            print(f"Conta para {titular} criada com sucesso!")
+            return nova_conta
+        elif conta_type_input == "2":
+            nova_conta = ContaPoupanca(titular, saldo_inicial)
+            self._contas.append(nova_conta)
+            print(f"Conta para {titular} criada com sucesso!")
+            return nova_conta
+        else:
+            print("Tipo de conta inválido. Nenhuma conta foi criada.")
+            return None
 
-            except ValueError as e:
-                print ("\nErro.{e}")
-                    
-        case 3:
-            try:
-                valor = float (input("\nDigite o valor que deeseja sacar: "))
-                conta1.sacar(valor)
-                conta = conta1
-                print (f"\nSaque realizado com sucesso, seu saldo final é de: R$ {conta.pegar_saldo():.2f}")
-
-            except ValueError as e:
-                print ("\nErro. {e}")
+    def listar_contas(self):
+        print("\n--- Listagem de Contas ---")
+        if not self._contas:
+            print("Nenhuma conta cadastrada.")
+        else:
+            for i, conta in enumerate(self._contas):
+                print(f"{i + 1}. Titular: {conta.titular}, Saldo: R$ {conta.pegar_saldo():.2f}")
+        print("--------------------------\n")
         
-        case 4:
-            print ("Mudando de conta...")
-            conta_type = 2
-                   
-        case 5:
-            break
+    def transferir(self, conta_origem, conta_destino, valor):
+        try:
+            print(f"\nTentando transferir R$ {valor:.2f} de {conta_origem.titular} para {conta_destino.titular}...")
+            conta_origem.sacar(valor)
+            conta_destino.depositar(valor)
+            print("Transferência realizada com sucesso!")
+        except (ValueError, RuntimeError) as e:
+            print(f"Erro na transferência: {e}")
 
-#loop caso conta poupança
-while conta_type == 2:                            
-    print ("\nO que deseja fazer?")
-    print ("\n1 - Exibir saldo \n2 - Depositar \n3 - Sacar \n4 - Mudar conta \n5 - Ver rendimento \n6 - Sair")
-    action = int (input ())
+meu_banco = Banco()
+
+while True:
+    print("\n--- Menu Principal ---")
+    print("1. Abrir nova conta")
+    print("2. Listar contas")
+    print("3. Realizar operações (ex: depósito, saque, transferência)")
+    print("4. Sair")
     
-    #match de ação de acordo com o input
-    match action:
-        case 1: 
-            conta2.ver_saldo()
-        #deposito
-        case 2: 
-            try:
-                valor = float(input ("\nDigite o valor que deseja depositar: "))
-                conta2.depositar(valor)
-                conta = conta2
-                print(f"Depósito realizado com sucesso! Seu saldo final é de: R$ {conta2.pegar_saldo():.2f}")
-
-            except ValueError as e:
-                print ("\nErro.{e}")
-        #saque            
-        case 3:
-            try:
-                valor = float (input("\nDigite o valor que deeseja sacar: "))
-                conta2.sacar(valor)
-                conta = conta2
-                print (f"\nSaque realizado com sucesso, seu saldo final é de: R$ {conta.pegar_saldo():.2f}")
-
-            except ValueError as e:
-                print ("\nErro. {e}")
+    escolha = input("Digite o número da sua escolha: ")
+    
+    if escolha == "1":
+        meu_banco.abrir_conta_user()
+    elif escolha == "2":
+        meu_banco.listar_contas()
+    elif escolha == "3":
+        if len(meu_banco._contas) < 2:
+            print("É necessário ter pelo menos duas contas para realizar transferências ou outras operações.")
+            continue
+            
+        print("\n--- Operações ---")
+        meu_banco.listar_contas()
         
-        case 4:
-            print ("Mudando de conta...")
-            conta_type = 1
-
-        case 5: 
-            conta2.rendimento ()
-            print (f"Seu saldo com o rendimento fica: R$ {conta2._saldo}")
-
-        case 6:
-            break
+        try:
+            idx_origem = int(input("Escolha o número da conta de origem: ")) - 1
+            idx_destino = int(input("Escolha o número da conta de destino: ")) - 1
+            valor_transferencia = float(input("Digite o valor a ser transferido: "))
+            
+            conta_origem = meu_banco._contas[idx_origem]
+            conta_destino = meu_banco._contas[idx_destino]
+            
+            meu_banco.transferir(conta_origem, conta_destino, valor_transferencia)
+            
+        except (ValueError, IndexError):
+            print("Entrada inválida. Por favor, digite um número válido de conta e valor.")
+            
+    elif escolha == "4":
+        print("Saindo do sistema. Obrigado por usar o WydenBank!")
+        break
+    else:
+        print("Opção inválida. Por favor, tente novamente.")
